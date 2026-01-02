@@ -679,7 +679,6 @@
       display: block;
     }
 
-    /* Estilos para los comentarios */
     .comments-section {
       margin-top: 40px;
       padding-top: 25px;
@@ -713,6 +712,7 @@
       padding: 15px;
       margin-bottom: 12px;
       transition: all 0.3s ease;
+      position: relative;
     }
 
     .comment-item:hover {
@@ -828,6 +828,58 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .mod-badge {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #ff4444;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 9999;
+      display: none;
+    }
+
+    .delete-comment-btn {
+      color: #ff4444;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .delete-comment-btn:hover {
+      color: #ff7777;
+    }
+
+    .mod-panel {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 30px;
+      z-index: 10000;
+      width: 300px;
+      text-align: center;
+    }
+
+    .mod-panel input {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: white;
     }
 
     @media (max-width: 900px) {
@@ -956,6 +1008,16 @@
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
+  
+  <div class="mod-badge" id="modBadge">MOD</div>
+  
+  <div class="mod-panel" id="modPanel">
+    <h3>Moderator Access</h3>
+    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Enter moderator password:</p>
+    <input type="password" id="modPassword" placeholder="Password">
+    <button class="btn btn-primary" style="width: 100%;" onclick="activateModerator()">Activate</button>
+    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="closeModPanel()">Cancel</button>
+  </div>
   
   <button class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
@@ -1308,6 +1370,7 @@
     };
 
     let currentScriptId = '';
+    let isModerator = false;
 
     function switchPage(pageId) {
       document.querySelectorAll('.page').forEach(p => {
@@ -1349,7 +1412,7 @@
       const left = document.getElementById('modal-left');
       const right = document.getElementById('modal-right');
       const overlay = document.getElementById('detail-overlay');
-
+      
       currentScriptId = id;
 
       left.innerHTML = `
@@ -1369,7 +1432,6 @@
           ${data.features.map(f => `<div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; font-size:13px; display:flex; align-items:center; gap:8px;"><i class="fas fa-check" style="color:var(--cyan);"></i> ${f}</div>`).join('')}
         </div>
         
-        <!-- Sección de Comentarios -->
         <div class="comments-section" id="comments-section">
           <h3><i class="fas fa-comments"></i> Community Comments</h3>
           <div class="comments-list" id="comments-list">
@@ -1405,7 +1467,7 @@
 
       overlay.style.display = 'flex';
       setTimeout(() => overlay.classList.add('show'), 10);
-
+      
       loadComments(id);
     }
 
@@ -1449,13 +1511,14 @@
         data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
         commentsList.innerHTML = data.map(comment => `
-          <div class="comment-item">
+          <div class="comment-item" id="comment-${comment.id}">
             <div class="comment-content">${escapeHtml(comment.content)}</div>
             <div class="comment-meta">
               <div class="comment-date">
                 <i class="far fa-clock"></i>
                 ${formatDate(comment.created_at)}
               </div>
+              ${isModerator ? `<button class="delete-comment-btn" onclick="deleteComment('${comment.id}')"><i class="fas fa-trash"></i> Delete</button>` : ''}
             </div>
           </div>
         `).join('');
@@ -1512,12 +1575,51 @@
         
         textarea.value = '';
         showToast('Comment posted successfully!');
-
+        
         loadComments(currentScriptId);
         
       } catch (error) {
         console.error('Error posting comment:', error);
         showToast('Error posting comment. Please try again.');
+      }
+    }
+
+    async function deleteComment(commentId) {
+      if (!isModerator) {
+        showToast('Moderator access required');
+        return;
+      }
+      
+      if (!confirm('Are you sure you want to delete this comment?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${COMMENTS_API_URL}?id=${commentId}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          showToast('Error deleting comment: ' + data.error);
+          return;
+        }
+        
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+          commentElement.remove();
+        }
+        
+        showToast('Comment deleted successfully');
+        
+        if (currentScriptId) {
+          loadComments(currentScriptId);
+        }
+        
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        showToast('Error deleting comment. Please try again.');
       }
     }
 
@@ -1545,6 +1647,32 @@
         month: 'short',
         day: 'numeric'
       });
+    }
+
+    function showModPanel() {
+      document.getElementById('modPanel').style.display = 'block';
+    }
+
+    function closeModPanel() {
+      document.getElementById('modPanel').style.display = 'none';
+      document.getElementById('modPassword').value = '';
+    }
+
+    function activateModerator() {
+      const password = document.getElementById('modPassword').value;
+      
+      if (password === '1234') {
+        isModerator = true;
+        document.getElementById('modBadge').style.display = 'block';
+        showToast('Moderator mode activated');
+        closeModPanel();
+        
+        if (currentScriptId) {
+          loadComments(currentScriptId);
+        }
+      } else {
+        showToast('Incorrect password');
+      }
     }
 
     function showToast(msg) {
@@ -1632,6 +1760,12 @@
         if (e.key === 'Escape') {
           closeMobileMenu();
           closeDetails();
+          closeModPanel();
+        }
+        
+        if (e.ctrlKey && e.key === 'p') {
+          e.preventDefault();
+          showModPanel();
         }
       });
     });
