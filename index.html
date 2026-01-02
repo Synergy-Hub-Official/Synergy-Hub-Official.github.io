@@ -1599,11 +1599,6 @@ async function deleteComment(commentId) {
       method: 'DELETE'
     });
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete comment');
-    }
-    
     const data = await response.json();
     
     if (data.error) {
@@ -1613,16 +1608,18 @@ async function deleteComment(commentId) {
     
     const commentElement = document.getElementById(`comment-${commentId}`);
     if (commentElement) {
-      commentElement.style.opacity = '0.5';
-      setTimeout(() => {
-        commentElement.remove();
-      }, 300);
-    }
-    
-    showToast('Comment deleted successfully');
-    
-    if (currentScriptId) {
-      setTimeout(() => loadComments(currentScriptId), 500);
+      commentElement.remove();
+      showToast('Comment deleted successfully');
+      
+      const commentsList = document.getElementById('comments-list');
+      if (commentsList && commentsList.children.length === 0) {
+        commentsList.innerHTML = `
+          <div class="no-comments">
+            <i class="fas fa-comment-slash"></i>
+            <p>No comments yet. Be the first to share your experience!</p>
+          </div>
+        `;
+      }
     }
     
   } catch (error) {
