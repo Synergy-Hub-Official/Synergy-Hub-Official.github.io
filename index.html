@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Synergy Hub | Official</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #050505;
+      --card-bg: rgba(20, 20, 30, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.5);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.5);
+      --pink: #ff3e80;
+      --green: #10b981;
+      --text-main: #ffffff;
+      --text-muted: #94a3b8;
+      --radius: 18px;
+      --font-main: 'Outfit', sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font-main);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--glass-border);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1400px;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 30px;
+      position: relative;
+      z-index: 10;
+      margin-top: 20px;
+      margin-bottom: 40px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 30px;
+      height: fit-content;
+      max-height: calc(100vh - 100px);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow-y: auto;
+    }
+
+    .brand {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .logo-box {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 0 20px var(--accent-glow);
+      animation: pulse 3s infinite, rotateLogo 10s infinite linear;
+    }
+
+    @keyframes rotateLogo {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, #ccc);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 5px var(--accent-glow);
+    }
+
+    .brand p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font-main);
+      font-weight: 600;
+      font-size: 15px;
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn i {
+      width: 24px;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: rgba(139, 92, 246, 0.1);
+      color: #fff;
+      transform: scale(1.02);
+    }
+
+    .nav-btn.active {
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .nav-btn.active i {
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan);
+    }
+
+    .sidebar-updates {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .sidebar-updates h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .sidebar-updates ul {
+      list-style: none;
+    }
+
+    .sidebar-updates li {
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-updates i {
+      color: var(--green);
+    }
+
+    .main-content {
+      position: relative;
+      min-height: 80vh;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 5px var(--accent-glow);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 700px;
+    }
+
+    .card-base {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .card-base:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow);
+    }
+
+    .grid-scripts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-home {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 25px;
+      margin-top: 25px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+      transition: 0.3s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.05);
+      transform: scale(1.05);
+    }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .stat-lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .script-card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .script-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--cyan));
+      opacity: 0;
+      transition: 0.3s;
+    }
+
+    .script-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .script-card:hover::before {
+      opacity: 1;
+    }
+
+    .thumbnail {
+      height: 150px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-muted);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .badge {
+      padding: 5px 12px;
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--cyan);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      text-shadow: 0 0 5px var(--accent-glow);
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .card-tags i {
+      color: var(--accent);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      border: none;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .btn-tiktok {
+      background: linear-gradient(45deg, #000, #25f4ee, #fe2c55);
+      border: none;
+    }
+
+    .btn-youtube {
+      background: rgba(255,0,0,0.1);
+      border-color: rgba(255,0,0,0.3);
+      color: #ff4444;
+    }
+
+    .btn-youtube:hover {
+      background: rgba(255,0,0,0.2);
+    }
+
+    .highlight-card {
+      background: linear-gradient(135deg, rgba(255, 62, 128, 0.05), rgba(0, 0, 0, 0));
+      border: 1px solid rgba(255, 62, 128, 0.2);
+    }
+
+    .highlight-card .card-title {
+      color: var(--pink);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 25px;
+    }
+
+    .feature-list li {
+      margin-bottom: 12px;
+      color: #cbd5e1;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .feature-list i {
+      color: var(--cyan);
+    }
+
+    #detail-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      backdrop-filter: blur(15px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    #detail-overlay.show {
+      opacity: 1;
+    }
+
+    .detail-modal {
+      background: #0f0f13;
+      width: 100%;
+      max-width: 900px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+      transform: scale(0.95);
+      transition: transform 0.3s;
+    }
+
+    #detail-overlay.show .detail-modal {
+      transform: scale(1);
+    }
+
+    .modal-content {
+      padding: 30px;
+      border-right: 1px solid var(--glass-border);
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    .modal-sidebar {
+      background: #0a0a0c;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-modal:hover {
+      background: var(--pink);
+    }
+
+    .code-block {
+      background: #050505;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 15px;
+      font-family: var(--font-code);
+      font-size: 12px;
+      color: #a5b4fc;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 15px;
+    }
+
+    .code-block::before {
+      content: 'Lua';
+      color: var(--cyan);
+      font-size: 10px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(15, 23, 42, 0.95);
+      border-left: 4px solid var(--cyan);
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      transform: translateX(150%);
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.active {
+      transform: translateX(0);
+    }
+
+    .toast-progress {
+      height: 2px;
+      background: var(--cyan);
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      animation: progress 3s linear;
+    }
+
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0; }
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      z-index: 1000;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.5);
+    }
+
+    .mobile-menu-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+
+    .mobile-sidebar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100%;
+      background: var(--card-bg);
+      border-right: 1px solid var(--glass-border);
+      padding: 25px;
+      z-index: 1000;
+      overflow-y: auto;
+      backdrop-filter: blur(20px);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-sidebar.active {
+      transform: translateX(0);
+    }
+
+    .mobile-overlay.active {
+      display: block;
+    }
+
+    /* Estilos para los comentarios */
+    .comments-section {
+      margin-top: 40px;
+      padding-top: 25px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .comments-section h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comments-section h3 i {
+      color: var(--cyan);
+    }
+
+    .comments-list {
+      margin-bottom: 25px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .comment-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .comment-item:hover {
+      background: rgba(139, 92, 246, 0.05);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .comment-content {
+      color: #e2e8f0;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .comment-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .comment-date {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .no-comments {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .no-comments i {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: var(--cyan);
+      display: block;
+    }
+
+    .comment-form {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .comment-form h4 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comment-form h4 i {
+      color: var(--green);
+    }
+
+    .comment-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: var(--font-main);
+      font-size: 14px;
+      resize: vertical;
+      transition: all 0.3s ease;
+    }
+
+    .comment-textarea:focus {
+      border-color: var(--cyan);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+    }
+
+    .comment-submit-btn {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .comment-submit-btn .btn {
+      padding: 10px 25px;
+      font-size: 14px;
+    }
+
+    .comment-loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+    }
+
+    .comment-loading i {
+      color: var(--cyan);
+      margin-right: 8px;
+    }
+
+    .comment-error {
+      background: rgba(255, 62, 128, 0.1);
+      border: 1px solid rgba(255, 62, 128, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      color: var(--pink);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        margin-top: 0;
+        padding: 20px;
+        padding-bottom: 40px;
+        padding-top: 80px;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-sidebar {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .grid-home,
+      .about-grid,
+      .detail-modal {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      h2 {
+        font-size: 32px;
+      }
+      
+      .nav-btn {
+        padding: 16px 20px;
+        font-size: 16px;
+      }
+      
+      .brand {
+        margin-bottom: 25px;
+      }
+      
+      .logo-box {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+      }
+      
+      .brand h1 {
+        font-size: 18px;
+      }
+      
+      .sidebar-updates {
+        margin-top: 25px;
+      }
+      
+      .sidebar-updates h3 {
+        font-size: 18px;
+      }
+      
+      .sidebar-updates li {
+        font-size: 14px;
+        padding: 5px 0;
+      }
+      
+      .btn {
+        padding: 14px;
+        font-size: 15px;
+      }
+      
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .comments-section {
+        margin-top: 30px;
+      }
+      
+      .comment-item {
+        padding: 12px;
+      }
+      
+      .comment-form {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .grid-scripts {
+        grid-template-columns: 1fr;
+      }
+      
+      .grid-home {
+        grid-template-columns: 1fr;
+      }
+      
+      h2 {
+        font-size: 28px;
+      }
+      
+      .comment-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  
+  <button class="mobile-menu-btn" id="mobileMenuBtn">
+    <i class="fas fa-bars"></i>
+  </button>
+  
+  <div class="mobile-menu-overlay" id="mobileOverlay"></div>
+  
+  <div class="mobile-sidebar" id="mobileSidebar">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div class="brand" style="text-align: left; margin: 0;">
+        <div class="logo-box" style="width: 50px; height: 50px; font-size: 22px; margin: 0 0 10px 0;">ST</div>
+        <h1 style="font-size: 18px;">Synergy Team</h1>
+        <p style="font-size: 12px;">Script Repository</p>
+      </div>
+      <button class="close-modal" onclick="closeMobileMenu()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <nav class="nav-menu">
+      <button class="nav-btn active" onclick="switchPage('home'); closeMobileMenu();">
+        <i class="fas fa-home"></i> <span>Home</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('scripts'); closeMobileMenu();">
+        <i class="fas fa-code"></i> <span>Scripts</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('about'); closeMobileMenu();">
+        <i class="fas fa-info-circle"></i> <span>About</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('discord'); closeMobileMenu();">
+        <i class="fab fa-discord"></i> <span>Discord</span>
+      </button>
+    </nav>
+    
+    <div class="sidebar-updates">
+      <h3>Latest Updates</h3>
+      <ul>
+        <li><i class="fas fa-sync"></i> Arsenal updated</li>
+        <li><i class="fas fa-sync"></i> New script added</li>
+        <li><i class="fas fa-sync"></i> Bug fixes</li>
+        <li><i class="fas fa-sync"></i> Performance improvements</li>
+        <li><i class="fas fa-sync"></i> UI enhancements</li>
+      </ul>
+    </div>
+    
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+      <a href="https://discord.gg/nCNASmNRTE" target="_blank" class="btn btn-primary" style="width:100%; margin-bottom: 10px;">
+        <i class="fab fa-discord"></i> Join Server
+      </a>
+      <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;">
+        © 2024 Synergy Team
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="logo-box">ST</div>
+          <h1>Synergy Team</h1>
+          <p>Script Repository</p>
+        </div>
+        <nav class="nav-menu">
+          <button class="nav-btn active" onclick="switchPage('home')">
+            <i class="fas fa-home"></i> <span>Home</span>
+          </button>
+          <button class="nav-btn" onclick="switchPage('scripts')">
+            <i class="fas fa-code"></i> <span>Scripts</span>
+          </button>
+          <button class="nav-btn" onclick="switchPage('about')">
+            <i class="fas fa-info-circle"></i> <span>About</span>
+          </button>
+          <button class="nav-btn" onclick="switchPage('discord')">
+            <i class="fab fa-discord"></i> <span>Discord</span>
+          </button>
+        </nav>
+        <div class="sidebar-updates">
+          <h3>Latest Updates</h3>
+          <ul>
+            <li><i class="fas fa-sync"></i> Arsenal updated</li>
+            <li><i class="fas fa-sync"></i> New script added</li>
+            <li><i class="fas fa-sync"></i> Bug fixes</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <a href="https://discord.gg/nCNASmNRTE" target="_blank" class="btn btn-primary" style="width:100%;">
+          <i class="fab fa-discord"></i> Join Server
+        </a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section id="home" class="page active">
+        <h2>Welcome to Synergy Hub! 🚀</h2>
+        <p class="subtitle">Your #1 source for powerful, undetected Roblox scripts. We provide the best gaming experience with regular updates and 24/7 support.</p>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--pink)">5+</div>
+            <div class="stat-lbl">Active Scripts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--cyan)">5k+</div>
+            <div class="stat-lbl">Daily Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--accent)">24/7</div>
+            <div class="stat-lbl">Support</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--green)">0</div>
+            <div class="stat-lbl">Keys Required</div>
+          </div>
+        </div>
+
+        <div class="grid-home">
+          <div class="card-base highlight-card">
+            <div class="card-header">
+              <span class="badge" style="background: rgba(255, 62, 128, 0.15); color: var(--pink); border-color: rgba(255, 62, 128, 0.3);">LATEST</span>
+            </div>
+            <div class="card-title">🔥 Latest Release: Arsenal</div>
+            <p style="color:var(--text-muted); margin-bottom:15px; font-size:14px;">Aimbot · Hitbox · ESP · More</p>
+            <p style="color:#e2e8f0; line-height:1.6; margin-bottom:20px;">Our most popular script with frequent updates and top performance for Xeno and Solara executors.</p>
+            <button class="btn btn-primary" style="width:auto; padding:10px 24px;" onclick="switchPage('scripts')">View All Scripts <i class="fas fa-arrow-right"></i></button>
+          </div>
+
+          <div class="card-base">
+            <div class="card-title"><i class="fas fa-star" style="color:gold; margin-right:8px;"></i> Why Choose Us?</div>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;">The best experience guaranteed</p>
+            <ul class="feature-list" style="margin-top:10px;">
+              <li><i class="fas fa-check-circle"></i> No keys required</li>
+              <li><i class="fas fa-check-circle"></i> Regular updates</li>
+              <li><i class="fas fa-check-circle"></i> Friendly community</li>
+              <li><i class="fas fa-check-circle"></i> Easy to use</li>
+              <li><i class="fas fa-check-circle"></i> Undetected</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:40px; text-align:center; font-size:12px; color:var(--text-muted); opacity:0.6;">
+          © 2024 Synergy Team • Made with ❤️ for the gaming community
+        </div>
+      </section>
+
+      <section id="scripts" class="page">
+        <h2>Script Library</h2>
+        <p class="subtitle">Select a game to view details and copy the loadstring.</p>
+
+        <div class="grid-scripts">
+          <div class="script-card">
+            <div class="thumbnail" style="background-image:url('https://tr.rbxcdn.com/180DAY-ac48650a254cdd674b875e0af459c9f2/768/432/Image/Webp/noFilter')"></div>
+            <div class="card-header">
+              <span class="badge">HOT</span>
+            </div>
+            <div class="card-title">Arsenal</div>
+            <div class="card-tags">
+              <span><i class="fas fa-crosshairs"></i> Aimbot</span>
+              <span><i class="fas fa-eye"></i> ESP</span>
+              <span><i class="fas fa-wind"></i> Fly</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; flex-grow: 1;">Complete arsenal script with Aimbot, Hitbox, ESP, and many other features for dominating the game.</p>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="openDetails('Arsenal')"><i class="fas fa-info-circle"></i> Info</button>
+              <button class="btn btn-primary" onclick="copyScript('Arsenal', scriptsData.Arsenal.raw)"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="script-card">
+            <div class="thumbnail" style="background-image:url('https://tr.rbxcdn.com/180DAY-60ddb0d84d02345fa0390f939d5f4574/768/432/Image/Webp/noFilter')"></div>
+            <div class="card-header" style="display: flex; justify-content: flex-start; gap: 8px;">
+              <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent); border-color: rgba(139, 92, 246, 0.2)">NEW</span>
+              <span class="badge">HOT</span>
+            </div>
+            <div class="card-title">Blind Shot</div>
+            <div class="card-tags">
+              <span><i class="fas fa-coins"></i> Trophy Farm</span>
+              <span><i class="fas fa-ghost"></i> AntiVoid</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; flex-grow: 1;">See invisible players, farm trophies automatically, anti‑void, and 1v1 auto‑farming.</p>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="openDetails('BlindShot')"><i class="fas fa-info-circle"></i> Info</button>
+              <button class="btn btn-primary" onclick="copyScript('BlindShot', scriptsData.BlindShot.raw)"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="script-card">
+            <div class="thumbnail" style="background-image:url('https://tr.rbxcdn.com/180DAY-dfd2c29703408ec08165c37951990801/768/432/Image/Webp/noFilter')"></div>
+            <div class="card-header">
+              <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent); border-color: rgba(139, 92, 246, 0.2)">NEW</span>
+            </div>
+            <div class="card-title">Build A Boat For Treasure</div>
+            <div class="card-tags">
+              <span><i class="fas fa-robot"></i> Auto Farm</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; flex-grow: 1;">Simple AutoFarm for building and farming in the game.</p>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="openDetails('BuildABoatForTreasure')"><i class="fas fa-info-circle"></i> Info</button>
+              <button class="btn btn-primary" onclick="copyScript('BuildABoatForTreasure', scriptsData.BuildABoatForTreasure.raw)"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+
+          <div class="script-card">
+            <div class="thumbnail" style="background-image:url('https://tr.rbxcdn.com/180DAY-18a78d9eee4fc149468c15745f902a6c/768/432/Image/Webp/noFilter')"></div>
+            <div class="card-header">
+              <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.2)">AFK</span>
+            </div>
+            <div class="card-title">Zombie Attack</div>
+            <div class="card-tags">
+              <span><i class="fas fa-skull"></i> AutoFarm</span>
+              <span><i class="fas fa-bolt"></i> Speed</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; flex-grow: 1;">AutoFarm zombies, ESP, speed hacks, and configurable aimbot.</p>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="openDetails('ZombieAttack')"><i class="fas fa-info-circle"></i> Info</button>
+              <button class="btn btn-primary" onclick="copyScript('ZombieAttack', scriptsData.ZombieAttack.raw)"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="page">
+        <h2>About Synergy Team 🏆</h2>
+        <p class="subtitle">We're a passionate group of developers creating high‑quality scripts for the Roblox community.</p>
+
+        <div class="about-grid">
+          <div class="card-base">
+            <h3 style="color:var(--accent); font-size:20px; margin-bottom:15px;">Our Mission</h3>
+            <p style="color:#cbd5e1; line-height:1.7; margin-bottom:25px;">
+              We believe that games should be more fun and accessible for everyone. Our scripts are designed to enhance your gaming experience without paywalls or complicated key systems.
+            </p>
+
+            <h3 style="color:var(--cyan); font-size:18px; margin-bottom:15px;">Why Choose Us?</h3>
+            <ul class="feature-list">
+              <li><i class="fas fa-bolt"></i> 100% free, no keys required</li>
+              <li><i class="fas fa-sync-alt"></i> Regular updates and improvements</li>
+              <li><i class="fas fa-users"></i> Friendly and active community</li>
+              <li><i class="fas fa-shield-alt"></i> Focus on quality and performance</li>
+              <li><i class="fas fa-code"></i> Transparent and honest development</li>
+            </ul>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div class="card-base" style="background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);">
+              <h3 style="color:#fff; font-size:18px; margin-bottom:20px; text-align:center;">Team Stats</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; text-align:center;">
+                <div>
+                  <div style="font-size:24px; font-weight:800; color:var(--accent);">3</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Developers</div>
+                </div>
+                <div>
+                  <div style="font-size:24px; font-weight:800; color:var(--cyan);">5+</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Active Scripts</div>
+                </div>
+                <div>
+                  <div style="font-size:24px; font-weight:800; color:var(--pink);">2023</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Founded</div>
+                </div>
+                <div>
+                  <div style="font-size:24px; font-weight:800; color:#fff;">1000+</div>
+                  <div style="font-size:12px; color:var(--text-muted);">Community</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-base">
+              <h3 style="color:var(--text-main); font-size:18px; margin-bottom:15px;">Social Networks</h3>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <a href="https://discord.gg/nCNASmNRTE" target="_blank" class="btn" style="background:#5865F2; border:none;"><i class="fab fa-discord"></i> Discord Server</a>
+                <a href="https://youtube.com/@SynergyHubOfficial" target="_blank" class="btn btn-youtube"><i class="fab fa-youtube"></i> YouTube Channel</a>
+                <a href="https://www.tiktok.com/@synergy.hub.official" target="_blank" class="btn btn-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="discord" class="page">
+        <h2>Community</h2>
+        <p class="subtitle">Join our growing community for support, early access, exclusive content, and fun events!</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div style="background: #5865F2; padding: 30px; border-radius: var(--radius); color: white; position: relative; overflow: hidden; display:flex; flex-direction:column; justify-content:center;">
+            <i class="fab fa-discord" style="font-size: 150px; position: absolute; right: -30px; bottom: -30px; opacity: 0.2; transform:rotate(-15deg);"></i>
+            <h3 style="font-size:24px;">Discord Server</h3>
+            <p style="margin: 10px 0 25px; color: rgba(255,255,255,0.9); font-size:15px; line-height:1.5;">
+              Get direct support, report bugs, request features, and chat with the developers.
+            </p>
+            <a href="https://discord.gg/nCNASmNRTE" target="_blank" class="btn" style="background: white; color: #5865F2; border: none; font-weight: 800; width: fit-content; padding: 12px 25px;">JOIN NOW</a>
+          </div>
+          <div class="card-base" style="padding:10px;">
+            <iframe src="https://discord.com/widget?id=1399508512748470454&theme=dark" width="100%" height="300" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" style="border-radius:12px;"></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="detail-overlay">
+    <div class="detail-modal">
+      <button class="close-modal" onclick="closeDetails()"><i class="fas fa-times"></i></button>
+
+      <div class="modal-content" id="modal-left"></div>
+      <div class="modal-sidebar" id="modal-right" style="background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle" style="color: var(--cyan); font-size: 24px;"></i>
+    <div>
+      <h4 style="margin:0; font-size: 15px; font-weight:700;">Success</h4>
+      <p id="toast-msg" style="margin:2px 0 0; font-size: 13px; color: #cbd5e1;">Operation completed</p>
+    </div>
+    <div class="toast-progress"></div>
+  </div>
+
+  <script>
+    const COMMENTS_API_URL = 'https://synergy-comments.vercel.app/api/comments';
+
+    const scriptsData = {
+      Arsenal: {
+        title: "Arsenal",
+        video: "7589958746067995924",
+        desc: "Complete Arsenal script with adjustable aimbot smoothing, ESP with team filters, Hitbox Expansor. Works with Xeno and Solara.",
+        features: ["AutoFarm", "Aimbot", "Hitbox", "ESP", "Weapon modifications"],
+        raw: "loadstring(game:HttpGet('https://raw.githubusercontent.com/Synergy-Hub-Official/Scripts/refs/heads/main/Games/Arsenal.lua'))()"
+      },
+      BlindShot: {
+        title: "Blind Shot",
+        video: "7587651976070958356",
+        desc: "See invisible players with ESP, farm 15 coins every 20 seconds without moving, anti‑void protection, and 1v1 auto‑farming that teleports you to victory.",
+        features: ["See Invisible", "Trophy Farm", "AntiVoid", "1v1 AutoFarm", "Undetectable"],
+        raw: "loadstring(game:HttpGet('https://raw.githubusercontent.com/Synergy-Hub-Official/Scripts/refs/heads/main/Games/Blind‑Shot.lua'))()"
+      },
+      BuildABoatForTreasure: {
+        title: "Build A Boat For Treasure",
+        video: "7587651976070958356",
+        desc: "Simple AutoFarm script for building boats and farming treasures efficiently.",
+        features: ["Auto Farm"],
+        raw: "loadstring(game:HttpGet('https://pastebin.com/raw/qM9SuLu8'))()"
+      },
+      ZombieAttack: {
+        title: "Zombie Attack",
+        video: "7581107144896826644",
+        desc: "Complete automation for Zombie Attack. Includes AutoFarm to kill zombies through waves, Auto Equip best weapons, Auto Buy Guns, and Anti‑AFK.",
+        features: ["AutoFarm", "Auto Equip", "Auto Buy", "Get Powerups", "Claim Rewards", "Anti Afk"],
+        raw: "loadstring(game:HttpGet('https://raw.githubusercontent.com/Xyraniz/Synergy‑Hub/refs/heads/main/Scripts/Zombie‑Attack.lua'))()"
+      }
+    };
+
+    let currentScriptId = '';
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        setTimeout(() => {
+          if (!p.classList.contains('active')) p.style.display = 'none';
+        }, 500);
+        p.style.display = 'none';
+      });
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById(pageId);
+      target.style.display = 'block';
+      setTimeout(() => target.classList.add('active'), 10);
+
+      const btns = document.querySelectorAll('.nav-btn');
+      if (pageId === 'home') btns[0].classList.add('active');
+      if (pageId === 'scripts') btns[1].classList.add('active');
+      if (pageId === 'about') btns[2].classList.add('active');
+      if (pageId === 'discord') btns[3].classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openMobileMenu() {
+      document.getElementById('mobileSidebar').classList.add('active');
+      document.getElementById('mobileOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileMenu() {
+      document.getElementById('mobileSidebar').classList.remove('active');
+      document.getElementById('mobileOverlay').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    function openDetails(id) {
+      const data = scriptsData[id];
+      const left = document.getElementById('modal-left');
+      const right = document.getElementById('modal-right');
+      const overlay = document.getElementById('detail-overlay');
+
+      currentScriptId = id;
+
+      left.innerHTML = `
+        <h2 style="margin-bottom:15px; font-size:24px;">${data.title}</h2>
+        <div style="width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; margin-bottom:20px; display:flex; align-items:center; justify-content:center; border:1px solid var(--glass-border); position:relative; overflow:hidden;">
+          <div style="text-align:center; z-index:2;">
+            <i class="fab fa-tiktok" style="font-size:40px; margin-bottom:10px; color:#fff;"></i>
+            <p style="margin-bottom:15px;">Watch Showcase</p>
+            <a href="https://www.tiktok.com/@synergy.hub.official/video/${data.video}" target="_blank" class="btn btn-tiktok" style="padding:10px 20px;">Open TikTok</a>
+          </div>
+          <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(45deg, #101010, #202020); opacity:0.5; z-index:1;"></div>
+        </div>
+        <h3 style="font-size:18px; color:#fff; margin-bottom:10px;">Description</h3>
+        <p style="color:#cbd5e1; line-height:1.6; margin-bottom:25px;">${data.desc}</p>
+        <h3 style="font-size:18px; color:#fff; margin-bottom:10px;">Features</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px;">
+          ${data.features.map(f => `<div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; font-size:13px; display:flex; align-items:center; gap:8px;"><i class="fas fa-check" style="color:var(--cyan);"></i> ${f}</div>`).join('')}
+        </div>
+        
+        <!-- Sección de Comentarios -->
+        <div class="comments-section" id="comments-section">
+          <h3><i class="fas fa-comments"></i> Community Comments</h3>
+          <div class="comments-list" id="comments-list">
+            <div class="comment-loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading comments...
+            </div>
+          </div>
+          <div class="comment-form">
+            <h4><i class="fas fa-edit"></i> Add a Comment</h4>
+            <textarea class="comment-textarea" id="comment-textarea" placeholder="Share your experience with this script... (Minimum 3 characters)" maxlength="500"></textarea>
+            <div class="comment-submit-btn">
+              <button class="btn btn-primary" onclick="postComment()"><i class="fas fa-paper-plane"></i> Post Comment</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      right.innerHTML = `
+        <div>
+          <h3 style="font-size:16px; margin-bottom:10px;">Loadstring</h3>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Copy and paste this into your executor.</p>
+          <div class="code-block" id="modal-code">${data.raw}</div>
+          <button class="btn btn-primary" style="width:100%; margin-top:20px; padding:14px;" onclick="copyScript('${data.title}', \`${data.raw}\`)"><i class="fas fa-copy"></i> Copy Script</button>
+        </div>
+        <div style="margin-top:auto; padding-top:20px;">
+          <div style="font-size:12px; color:var(--text-muted); border-top:1px solid var(--glass-border); padding-top:15px; display:flex; flex-direction:column; gap:8px;">
+            <div><i class="fas fa-shield-alt" style="color:#10b981; width:15px;"></i> Verified Safe</div>
+            <div><i class="fas fa-history" style="color:var(--accent); width:15px;"></i> Updated: Dec 2025</div>
+            <div><i class="fas fa-check-circle" style="color:var(--pink); width:15px;"></i> No Key System</div>
+          </div>
+        </div>
+      `;
+
+      overlay.style.display = 'flex';
+      setTimeout(() => overlay.classList.add('show'), 10);
+
+      loadComments(id);
+    }
+
+    function closeDetails() {
+      const overlay = document.getElementById('detail-overlay');
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        currentScriptId = '';
+      }, 300);
+    }
+
+    async function loadComments(scriptId) {
+      const commentsList = document.getElementById('comments-list');
+      if (!commentsList) return;
+      
+      try {
+        const response = await fetch(`${COMMENTS_API_URL}?script=${encodeURIComponent(scriptId)}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          commentsList.innerHTML = `
+            <div class="comment-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div>Error loading comments: ${data.error.message || 'Unknown error'}</div>
+            </div>
+          `;
+          return;
+        }
+        
+        if (!data || data.length === 0) {
+          commentsList.innerHTML = `
+            <div class="no-comments">
+              <i class="fas fa-comment-slash"></i>
+              <p>No comments yet. Be the first to share your experience!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        commentsList.innerHTML = data.map(comment => `
+          <div class="comment-item">
+            <div class="comment-content">${escapeHtml(comment.content)}</div>
+            <div class="comment-meta">
+              <div class="comment-date">
+                <i class="far fa-clock"></i>
+                ${formatDate(comment.created_at)}
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        commentsList.innerHTML = `
+          <div class="comment-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>Error loading comments. Please try again later.</div>
+          </div>
+        `;
+      }
+    }
+
+    async function postComment() {
+      const textarea = document.getElementById('comment-textarea');
+      const content = textarea.value.trim();
+      
+      if (!currentScriptId) {
+        showToast('Please select a script first');
+        return;
+      }
+      
+      if (content.length < 3) {
+        showToast('Comment must be at least 3 characters long');
+        textarea.focus();
+        return;
+      }
+      
+      if (content.length > 500) {
+        showToast('Comment is too long (max 500 characters)');
+        return;
+      }
+      
+      try {
+        const response = await fetch(COMMENTS_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            script: currentScriptId,
+            content: content
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          showToast('Error posting comment: ' + (data.error.message || 'Unknown error'));
+          return;
+        }
+        
+        textarea.value = '';
+        showToast('Comment posted successfully!');
+
+        loadComments(currentScriptId);
+        
+      } catch (error) {
+        console.error('Error posting comment:', error);
+        showToast('Error posting comment. Please try again.');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+      if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+      if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    function copyScript(name, code) {
+      navigator.clipboard.writeText(code);
+      showToast(`${name} copied successfully!`);
+    }
+
+    function initParticles() {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, particles = [];
+
+      const isMobile = window.innerWidth < 768;
+      const particleCount = isMobile ? 35 : 120;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.5;
+          this.vy = (Math.random() - 0.5) * 0.5;
+          this.size = Math.random() * 2 + 0.5;
+          this.alpha = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(139, 92, 246, ${this.alpha})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach((p, index) => {
+          p.update();
+          p.draw();
+          for (let j = index + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < (isMobile ? 100 : 180)) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(139, 92, 246, ${0.15 * (1 - dist / 180)})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          }
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      initParticles();
+      
+      document.getElementById('mobileMenuBtn').addEventListener('click', openMobileMenu);
+      document.getElementById('mobileOverlay').addEventListener('click', closeMobileMenu);
+      
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeMobileMenu();
+          closeDetails();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
